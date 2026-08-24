@@ -185,7 +185,7 @@ export const projects: Project[] = [
       'No engine underneath it. Just Three.js, real NASA and ISS data, and however much math that turned out to need.',
     ],
     github: 'https://github.com/Hamzyzz-k/Gods-View',
-    links: [{ label: 'Live', href: 'https://gods-view.vercel.app' }],
+    links: [{ label: 'Live', href: 'https://gods-view-cu.netlify.app' }],
   },
   {
     id: 'floodsense',
