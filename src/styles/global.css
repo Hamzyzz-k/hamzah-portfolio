@@ -1,0 +1,318 @@
+@import './tokens.css';
+
+/* ---------------------------------- reset -------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.35;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  overflow-x: hidden;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath d='M1 0h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-3v1h-1v1h-1v1H1z' fill='%23000'/%3E%3Cpath d='M2 1h1v1h1v1h1v1h1v1h1v1h-2v1h-1v1h-1v1H2z' fill='%23fff'/%3E%3C/svg%3E")
+    2 2, auto;
+}
+
+img,
+canvas,
+svg {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+/* Only content images shrink to fit — the map canvas and sprite canvases are
+   sized deliberately and must not be clamped by a zero-width parent. */
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--accent-2);
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ------------------------------ typography ------------------------------- */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+p {
+  margin: 0 0 var(--sp-4);
+}
+
+.mono-label {
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  letter-spacing: 0.12em;
+  color: var(--accent-3);
+  text-transform: uppercase;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------- layout ---------------------------------- */
+
+.section {
+  position: relative;
+  padding: var(--sp-24) var(--sp-6);
+  scroll-margin-top: var(--nav-h);
+}
+
+.section__inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.section__head {
+  margin-bottom: var(--sp-12);
+}
+
+.section__head h2 {
+  font-size: var(--fs-h2);
+  margin: var(--sp-3) 0 var(--sp-4);
+  color: var(--ink);
+}
+
+.section__head p {
+  color: var(--ink-dim);
+  max-width: 60ch;
+}
+
+.rule {
+  height: 4px;
+  width: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent) 0 12px,
+    transparent 12px 24px
+  );
+}
+
+/* ---------------------------- pixel primitives ---------------------------- */
+
+/* Chunky notched-corner frame, built from stepped shadows so the corners stay
+   square at any size and never anti-alias. */
+.pixel-frame {
+  position: relative;
+  background: var(--bg-panel);
+  box-shadow: 0 -4px 0 0 var(--outline), 0 4px 0 0 var(--outline),
+    -4px 0 0 0 var(--outline), 4px 0 0 0 var(--outline),
+    0 8px 0 0 var(--shadow);
+}
+
+.pixel-frame--inset {
+  background: var(--bg-inset);
+  box-shadow: 0 -4px 0 0 var(--outline), 0 4px 0 0 var(--outline),
+    -4px 0 0 0 var(--outline), 4px 0 0 0 var(--outline);
+}
+
+.pixel-frame--raise {
+  background: var(--bg-raise);
+}
+
+.pixel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--accent);
+  color: #fff6e5;
+  border: 0;
+  cursor: inherit;
+  box-shadow: 0 -4px 0 0 var(--outline), 0 4px 0 0 var(--outline),
+    -4px 0 0 0 var(--outline), 4px 0 0 0 var(--outline),
+    0 8px 0 0 var(--shadow);
+  transform: translateY(0);
+}
+
+.pixel-btn:hover {
+  background: var(--accent-2);
+  color: var(--outline);
+}
+
+.pixel-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 -4px 0 0 var(--outline), 0 4px 0 0 var(--outline),
+    -4px 0 0 0 var(--outline), 4px 0 0 0 var(--outline);
+}
+
+.pixel-btn--ghost {
+  background: transparent;
+  color: var(--ink);
+}
+
+.pixel-btn--ghost:hover {
+  background: var(--bg-raise);
+  color: var(--accent-2);
+}
+
+/* stat / progress bar.
+   These are rendered as <span>, so they must be blockified explicitly —
+   width and height do not apply to an inline box. */
+.bar {
+  display: block;
+  height: 16px;
+  background: var(--bg-inset);
+  box-shadow: 0 -4px 0 0 var(--outline), 0 4px 0 0 var(--outline),
+    -4px 0 0 0 var(--outline), 4px 0 0 0 var(--outline);
+  overflow: hidden;
+}
+
+.bar__fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent-3);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.18) 0 4px,
+    transparent 4px 8px
+  );
+  transition: width 900ms steps(20, end);
+}
+
+/* ------------------------------- effects --------------------------------- */
+
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.13) 0 2px,
+    transparent 2px 4px
+  );
+  opacity: 0.5;
+  z-index: 3;
+}
+
+.grid-bg {
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+}
+
+.reveal.is-visible {
+  animation: pop-in 420ms steps(7, end) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1;
+    animation: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

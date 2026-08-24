@@ -1,0 +1,155 @@
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   Every colour in the site resolves through a token here, so the day/night
+   toggle is a single `data-theme` flip on <html>. Night is the default.
+   Sizes snap to a 4px grid so nothing lands on a half pixel and blurs.
+--------------------------------------------------------------------------- */
+
+:root {
+  /* type */
+  --font-display: 'Press Start 2P', 'Courier New', monospace;
+  --font-body: 'VT323', 'Courier New', monospace;
+
+  --fs-hero: clamp(22px, 5vw, 46px);
+  --fs-h2: clamp(15px, 2.6vw, 24px);
+  --fs-h3: clamp(11px, 1.5vw, 14px);
+  --fs-label: clamp(8px, 1.1vw, 10px);
+  --fs-body: clamp(18px, 1.9vw, 22px);
+  --fs-small: 17px;
+
+  /* 4px spacing grid */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-24: 96px;
+
+  --border: 4px;
+  --radius: 0px;
+
+  --nav-h: 56px;
+  --content-max: 1120px;
+
+  /* avatar-derived, identical in both themes */
+  --skin: #bd9058;
+  --skin-light: #cdb695;
+  --skin-shadow: #875937;
+  --hair: #241b1e;
+  --hair-light: #342a2b;
+  --beard: #503830;
+  --shirt: #e8dcc0;
+}
+
+/* ------------------------------ NIGHT (default) ------------------------- */
+
+:root,
+:root[data-theme='night'] {
+  color-scheme: dark;
+
+  --bg-deep: #0a0e1c;
+  --bg: #12172b;
+  --bg-raise: #1b2140;
+  --bg-panel: #222a4e;
+  --bg-inset: #0f1428;
+
+  --ink: #f4e6c3;
+  --ink-dim: #9a97bd;
+  --ink-faint: #5d5b80;
+
+  --accent: #e8563f;
+  --accent-2: #f2b950;
+  --accent-3: #3fb28f;
+  --accent-4: #5aa9e6;
+
+  --outline: #05070f;
+  --shadow: rgba(0, 0, 0, 0.55);
+  --grid-line: rgba(244, 230, 195, 0.05);
+
+  /* world */
+  --sky-top: #0a0e1c;
+  --sky-bottom: #232a55;
+  --hill-far: #1b2140;
+  --hill-near: #141a33;
+  --grass: #21503a;
+  --grass-alt: #1a4130;
+  --grass-edge: #143026;
+  --path: #4e3d2c;
+  --path-edge: #3a2c1f;
+  --water: #1d3564;
+  --water-light: #2b4e8c;
+  --tree-leaf: #7a3350;
+  --tree-leaf-2: #5c2440;
+  --tree-trunk: #33251c;
+  --rock: #333a5c;
+  --window-lit: #f2b950;
+  --star-opacity: 1;
+  --sun-moon: #f4e6c3;
+  --cloud: transparent;
+  /* map labels need to survive on top of grass, water and rooftops alike */
+  --label-ink: #f6ecd4;
+  --label-halo: #05070f;
+}
+
+/* -------------------------------- DAY ----------------------------------- */
+
+:root[data-theme='day'] {
+  color-scheme: light;
+
+  --bg-deep: #f2e4c2;
+  --bg: #fbf3dd;
+  --bg-raise: #fffaea;
+  --bg-panel: #f4e7c6;
+  --bg-inset: #eadcb6;
+
+  --ink: #2a2036;
+  --ink-dim: #6b5a4e;
+  --ink-faint: #a3927f;
+
+  --accent: #d8452f;
+  --accent-2: #d98f1f;
+  --accent-3: #23906f;
+  --accent-4: #2f78bd;
+
+  --outline: #2a2036;
+  --shadow: rgba(42, 32, 54, 0.25);
+  --grid-line: rgba(42, 32, 54, 0.06);
+
+  /* world */
+  --sky-top: #79cdf0;
+  --sky-bottom: #cdefff;
+  --hill-far: #8fc98a;
+  --hill-near: #5da85c;
+  --grass: #63b555;
+  --grass-alt: #55a349;
+  --grass-edge: #3f8339;
+  --path: #cba977;
+  --path-edge: #a98959;
+  --water: #46a6d8;
+  --water-light: #7fc9ec;
+  --tree-leaf: #ef7f9c;
+  --tree-leaf-2: #d95f80;
+  --tree-trunk: #7a5539;
+  --rock: #9aa3ae;
+  --window-lit: #6b5a4e;
+  --star-opacity: 0;
+  --sun-moon: #ffe98a;
+  --cloud: rgba(255, 255, 255, 0.92);
+  --label-ink: #fdf6e4;
+  --label-halo: #23301f;
+}
+
+/* Colour transition is only enabled during a theme flip, so the rest of the
+   time scroll-driven work is not fighting a transition on every element. */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: background-color 420ms steps(6, end), color 420ms steps(6, end),
+    border-color 420ms steps(6, end), fill 420ms steps(6, end),
+    box-shadow 420ms steps(6, end), opacity 420ms steps(6, end) !important;
+}
