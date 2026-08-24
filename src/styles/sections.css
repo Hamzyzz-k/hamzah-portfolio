@@ -280,10 +280,37 @@
 
 .hud__brand {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  gap: var(--sp-3);
   color: var(--ink);
   flex: 0 0 auto;
+}
+
+.hud__logo {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: var(--bg-panel);
+  box-shadow: 0 -3px 0 0 var(--outline), 0 3px 0 0 var(--outline),
+    -3px 0 0 0 var(--outline), 3px 0 0 0 var(--outline);
+  transition: transform 160ms steps(4, end);
+}
+
+.hud__brand:hover .hud__logo {
+  transform: translateY(-2px);
+}
+
+.hud__logo img {
+  width: 22px;
+  height: 22px;
+}
+
+.hud__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .hud__brand-name {
@@ -1543,7 +1570,14 @@
      size; .cab itself is capped and centred within it via auto margins.
      (Centring via justify-items on the grid instead made the li's width
      indeterminate, since its only child was width: 100% — that collapsed
-     every cell to 0 width.) */
+     every cell to 0 width.)
+
+     display: block is required for the auto margins to do anything — a
+     <button> defaults to display: inline-block, and auto margins are a
+     no-op on inline-level boxes. Without this the cabinet just sits at the
+     start of the line box (left, in LTR), which is exactly the "aligned
+     left instead of centred" bug this rule exists to fix. */
+  display: block;
   width: 100%;
   max-width: 250px;
   margin: 0 auto;

@@ -60,8 +60,13 @@ export default function HudNav({ theme, onToggleTheme }: Props) {
   return (
     <header className="hud">
       <a className="hud__brand" href="#hero">
-        <span className="hud__brand-name">{profile.name}</span>
-        <span className="hud__brand-quip">{quip}</span>
+        <span className="hud__logo" aria-hidden="true">
+          <img src="/sprites/avatar-16.png" width={16} height={16} alt="" />
+        </span>
+        <span className="hud__brand-text">
+          <span className="hud__brand-name">{profile.name}</span>
+          <span className="hud__brand-quip">{quip}</span>
+        </span>
       </a>
 
       <button

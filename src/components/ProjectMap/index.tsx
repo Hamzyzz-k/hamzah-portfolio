@@ -35,6 +35,23 @@ const ROUTE_D = smoothPath(routePoints);
 const scalePath = (pts: readonly (readonly [number, number])[]) =>
   smoothPath(pts.map(([x, y]) => [x * MAP_SCALE, y * MAP_SCALE]) as [number, number][]);
 
+/**
+ * Whether to show the simple card list instead of the walkable map.
+ *
+ * Width alone misses a real failure case: a phone rotated to landscape can
+ * be wider than 780px while only ~375px tall, which leaves almost no room
+ * for the sticky map stage under the section heading — the map still
+ * mounts, but there is barely anything to see. Gate the height check on a
+ * coarse (touch) pointer so a desktop user with a short browser window
+ * still gets the interactive map, since they can just resize it.
+ */
+function computeNarrow(): boolean {
+  if (typeof window === 'undefined') return false;
+  const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+  const tooShortForTouch = coarsePointer && window.innerHeight < 500;
+  return window.innerWidth < 780 || tooShortForTouch;
+}
+
 interface Props {
   theme: Theme;
 }
@@ -49,18 +66,22 @@ export default function ProjectMap({ theme }: Props) {
   const palette = useWorldPalette(theme);
   const progress = useScrollProgress(sectionRef, { ease: reduced ? 1 : 0.13 });
 
-  const [narrow, setNarrow] = useState(
-    typeof window === 'undefined' ? false : window.innerWidth < 780,
-  );
+  const [narrow, setNarrow] = useState(computeNarrow);
   const [stageSize, setStageSize] = useState({ w: 900, h: 640 });
   const [stops, setStops] = useState<number[]>([]);
 
   /* ---------------------------------------------------------------- layout */
 
   useEffect(() => {
-    const onResize = () => setNarrow(window.innerWidth < 780);
+    const onResize = () => setNarrow(computeNarrow());
+    // 'resize' alone misses a phone rotating with no width change to the
+    // outer window in some browsers; 'orientationchange' catches that.
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
   }, []);
 
   useEffect(() => {
