@@ -161,6 +161,16 @@ export default function ProjectMap({ theme }: Props) {
 
   /* ----------------------------------------- hand the character to the map */
 
+  // Read via a ref inside the rAF loop below rather than as effect deps —
+  // these change on nearly every scroll frame, and putting them in the deps
+  // array tore the effect down and rebuilt it just as often. Each teardown's
+  // cleanup called `companion.setAnchor(null)` synchronously, which snapped
+  // the companion back toward its off-map resting spot at the left edge for
+  // a frame before the next publish restored it, reading as a constant pull
+  // to the left while scrolling.
+  const latest = useRef({ camX, camY, charX, charY, facing, flip, zoom, swimming, atStop });
+  latest.current = { camX, camY, charX, charY, facing, flip, zoom, swimming, atStop };
+
   useEffect(() => {
     if (narrow) return;
     const stage = stageRef.current;
@@ -175,14 +185,15 @@ export default function ProjectMap({ theme }: Props) {
       if (!onScreen) {
         companion.setAnchor(null);
       } else {
+        const l = latest.current;
         companion.setAnchor({
-          x: rect.left + camX + charX,
-          y: rect.top + camY + charY,
-          facing,
-          flip,
-          scale: Math.max(2, Math.round(3 * zoom)),
-          swimming,
-          stop: atStop,
+          x: rect.left + l.camX + l.charX,
+          y: rect.top + l.camY + l.charY,
+          facing: l.facing,
+          flip: l.flip,
+          scale: Math.max(2, Math.round(3 * l.zoom)),
+          swimming: l.swimming,
+          stop: l.atStop,
         });
       }
       raf = requestAnimationFrame(publish);
@@ -193,7 +204,7 @@ export default function ProjectMap({ theme }: Props) {
       cancelAnimationFrame(raf);
       companion.setAnchor(null);
     };
-  }, [narrow, camX, camY, charX, charY, facing, flip, zoom, swimming, atStop]);
+  }, [narrow]);
 
   const jumpToStop = (i: number) => {
     const el = sectionRef.current;
