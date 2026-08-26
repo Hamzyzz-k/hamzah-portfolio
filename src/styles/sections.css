@@ -959,6 +959,11 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  /* Mobile browsers resize their own chrome (address bar) as you scroll, so
+     100vh alone can be taller than what's actually visible, cropping the
+     stage. svh tracks the shrunk, always-visible viewport instead; vh stays
+     as the fallback for browsers that don't support it. */
+  height: 100svh;
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
@@ -1262,6 +1267,25 @@
   text-align: center;
   color: var(--ink-faint);
   font-size: var(--fs-small);
+}
+
+@media (max-width: 780px) {
+  /* The dialogue box has no height cap on desktop because the wide stage
+     keeps blurb text to a few lines; on a narrow phone stage the same copy
+     wraps far more and would otherwise grow tall enough to cover the whole
+     map. Bound it between the HUD and the bottom edge and let it scroll. */
+  .map__talk {
+    top: 58px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* Room for the speaker tab, which sits 18px above the box, so it stays
+     inside the scroll container's visible area instead of being clipped. */
+  .map__talk .dialogue {
+    margin-top: 22px;
+  }
 }
 
 /* mobile project list */

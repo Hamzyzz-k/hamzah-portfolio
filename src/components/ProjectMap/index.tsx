@@ -38,18 +38,19 @@ const scalePath = (pts: readonly (readonly [number, number])[]) =>
 /**
  * Whether to show the simple card list instead of the walkable map.
  *
- * Width alone misses a real failure case: a phone rotated to landscape can
- * be wider than 780px while only ~375px tall, which leaves almost no room
- * for the sticky map stage under the section heading — the map still
- * mounts, but there is barely anything to see. Gate the height check on a
- * coarse (touch) pointer so a desktop user with a short browser window
- * still gets the interactive map, since they can just resize it.
+ * The map itself is width-independent — the camera's zoom floor keeps every
+ * element the same on-screen size no matter how narrow the stage gets, it
+ * just pans further to compensate — so portrait phones get the real
+ * walkable map too. The one case with no fix but more room is a phone
+ * rotated to landscape: short enough that the sticky stage has almost
+ * nothing to work with under the section heading. Gate that on a coarse
+ * (touch) pointer so a desktop user with a short browser window still gets
+ * the interactive map, since they can just resize it.
  */
 function computeNarrow(): boolean {
   if (typeof window === 'undefined') return false;
   const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
-  const tooShortForTouch = coarsePointer && window.innerHeight < 500;
-  return window.innerWidth < 780 || tooShortForTouch;
+  return coarsePointer && window.innerHeight < 500;
 }
 
 interface Props {
