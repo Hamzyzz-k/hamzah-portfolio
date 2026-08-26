@@ -77,7 +77,7 @@ export default function Companion() {
   const rafRef = useRef(0);
   const breathTimers = useRef<number[]>([]);
 
-  const { anchor, action, hidden, arrival } = state;
+  const { anchor, action, hidden, occluded, arrival } = state;
 
   /* ------------------------------------------------------------ behaviour */
 
@@ -236,7 +236,10 @@ export default function Companion() {
     return () => cancelAnimationFrame(rafRef.current);
   }, [anchor, reduced]);
 
-  if (hidden) return null;
+  // Bailing out of the render keeps the component mounted, so his eased
+  // position survives an occlusion and he picks up exactly where he stood
+  // instead of walking back in from the edge.
+  if (hidden || occluded) return null;
 
   /* --------------------------------------------------------------- render */
 

@@ -53,6 +53,21 @@ function computeNarrow(): boolean {
   return coarsePointer && window.innerHeight < 500;
 }
 
+/**
+ * Phone-sized layout, where the dialogue is opened by tapping rather than
+ * automatically on arrival.
+ *
+ * On a wide stage the dialogue sits in a corner and leaves the map readable,
+ * so opening it on arrival costs nothing. On a phone it necessarily covers
+ * most of the stage and swallows the touch-scroll that would carry you to the
+ * next project — so there, arriving only flags the project and it takes a tap
+ * to actually open it. Kept in sync with the 780px CSS breakpoint.
+ */
+function computeCompact(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth <= 780;
+}
+
 interface Props {
   theme: Theme;
 }
@@ -68,13 +83,19 @@ export default function ProjectMap({ theme }: Props) {
   const progress = useScrollProgress(sectionRef, { ease: reduced ? 1 : 0.13 });
 
   const [narrow, setNarrow] = useState(computeNarrow);
+  const [compact, setCompact] = useState(computeCompact);
   const [stageSize, setStageSize] = useState({ w: 900, h: 640 });
   const [stops, setStops] = useState<number[]>([]);
+  /** Compact mode only: which project the user has actually opened. */
+  const [openStop, setOpenStop] = useState<number | null>(null);
 
   /* ---------------------------------------------------------------- layout */
 
   useEffect(() => {
-    const onResize = () => setNarrow(computeNarrow());
+    const onResize = () => {
+      setNarrow(computeNarrow());
+      setCompact(computeCompact());
+    };
     // 'resize' alone misses a phone rotating with no width change to the
     // outer window in some browsers; 'orientationchange' catches that.
     window.addEventListener('resize', onResize);
@@ -132,7 +153,32 @@ export default function ProjectMap({ theme }: Props) {
   }, [sample.route]);
 
   const atStop = sample.stop;
-  const activeProject = atStop === null ? null : projects[atStop];
+  /** Where he is parked — drives the HUD, the pin highlight and his pose. */
+  const stoppedProject = atStop === null ? null : projects[atStop];
+
+  // Walking on past a project retires its panel, so a stale one can't be left
+  // hanging over a different part of the map.
+  useEffect(() => {
+    if (openStop !== null && atStop !== openStop) setOpenStop(null);
+  }, [atStop, openStop]);
+
+  // Leaving compact mode (a rotate, or a desktop window widening) hands the
+  // dialogue back to arrival-driven opening, so drop the tapped-open state.
+  useEffect(() => {
+    if (!compact) setOpenStop(null);
+  }, [compact]);
+
+  const shownStop = compact ? openStop : atStop;
+  const shownProject = shownStop === null ? null : projects[shownStop];
+
+  // The open panel covers the stage he is standing on, and he is fixed to the
+  // viewport above the whole section, so without this he reads as standing on
+  // top of the write-up. Paint him out for as long as it is open — his anchor
+  // is untouched, so closing it puts him straight back where he was.
+  useEffect(() => {
+    companion.setOccluded(compact && openStop !== null);
+    return () => companion.setOccluded(false);
+  }, [compact, openStop]);
 
   // Geometric, not progress-range based: he is "swimming" whenever his actual
   // map position falls inside the lake's ellipse, however the route curve
@@ -218,7 +264,7 @@ export default function ProjectMap({ theme }: Props) {
   };
 
   const here =
-    activeProject?.location ??
+    stoppedProject?.location ??
     districts.reduce(
       (best, d) => {
         const dist = (d.at[0] - pos.x) ** 2 + (d.at[1] - pos.y) ** 2;
@@ -323,16 +369,33 @@ export default function ProjectMap({ theme }: Props) {
             {projects.map((p, i) => {
               const d = districtById[p.location];
               if (!d) return null;
+              const here = atStop === i;
+              // The camera shrinks the whole map on a phone, which would leave
+              // the pin far under a usable tap size. Counter-scaling the one
+              // he is standing at keeps it at its true CSS size on screen
+              // whatever the camera is doing, so it stays readable and
+              // tappable — and reads as the pin popping out as he arrives.
+              const pop = compact && here;
               return (
                 <button
                   key={p.id}
                   type="button"
-                  className={`map__pin ${atStop === i ? 'is-active' : ''}`}
-                  style={{ left: d.at[0] * MAP_SCALE, top: d.at[1] * MAP_SCALE }}
-                  onClick={() => jumpToStop(i)}
+                  className={`map__pin ${here ? 'is-active' : ''} ${pop ? 'is-popped' : ''}`}
+                  style={{
+                    left: d.at[0] * MAP_SCALE,
+                    top: d.at[1] * MAP_SCALE,
+                    ...(pop
+                      ? {
+                          transform: `translate(-50%, -100%) scale(${(1 / zoom).toFixed(3)})`,
+                          transformOrigin: '50% 100%',
+                        }
+                      : null),
+                  }}
+                  onClick={() => (pop ? setOpenStop(i) : jumpToStop(i))}
+                  aria-label={pop ? `Read about ${p.title}` : `Go to ${p.title}`}
                 >
                   <span className="map__pin-head">{i + 1}</span>
-                  <span className="map__pin-label">{p.sign}</span>
+                  <span className="map__pin-label">{pop ? p.title : p.sign}</span>
                 </button>
               );
             })}
@@ -355,28 +418,29 @@ export default function ProjectMap({ theme }: Props) {
             <span className="map__rail-fill" style={{ height: `${sample.route * 100}%` }} />
           </div>
 
-          <div className={`map__talk ${activeProject ? 'is-open' : ''}`}>
-            {activeProject && (
+          <div className={`map__talk ${shownProject ? 'is-open' : ''}`}>
+            {shownProject && (
               <DialogueBox
-                speaker={`${activeProject.title} · ${activeProject.year}`}
-                lines={activeProject.dialogue}
+                speaker={`${shownProject.title} · ${shownProject.year}`}
+                lines={shownProject.dialogue}
                 active
-                key={activeProject.id}
+                key={shownProject.id}
+                onClose={compact ? () => setOpenStop(null) : undefined}
               >
-                <p className="dialogue__blurb">{activeProject.blurb}</p>
+                <p className="dialogue__blurb">{shownProject.blurb}</p>
                 <div className="dialogue__row">
                   <span className="chip-row">
-                    {activeProject.stack.map((s) => (
+                    {shownProject.stack.map((s) => (
                       <span key={s} className="chip">
                         {s}
                       </span>
                     ))}
                   </span>
                   <span className="dialogue__links">
-                    {activeProject.github && (
+                    {shownProject.github && (
                       <a
                         className="gh-link"
-                        href={activeProject.github}
+                        href={shownProject.github}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -384,7 +448,7 @@ export default function ProjectMap({ theme }: Props) {
                         <span>Repo</span>
                       </a>
                     )}
-                    {activeProject.links.map((l) => (
+                    {shownProject.links.map((l) => (
                       <a key={l.label} className="pixel-btn pixel-btn--sm" href={l.href}>
                         {l.label}
                       </a>
@@ -392,7 +456,7 @@ export default function ProjectMap({ theme }: Props) {
                   </span>
                 </div>
                 <span className="dialogue__typing">
-                  {codingLines[(atStop ?? 0) % codingLines.length]}
+                  {codingLines[(shownStop ?? 0) % codingLines.length]}
                 </span>
               </DialogueBox>
             )}
@@ -400,7 +464,9 @@ export default function ProjectMap({ theme }: Props) {
         </div>
 
         <p className="map__hint">
-          Keep scrolling to walk. Stop anywhere for a dance. Click a pin to jump.
+          {compact
+            ? 'Keep scrolling to walk. Tap a project sign to read about it.'
+            : 'Keep scrolling to walk. Stop anywhere for a dance. Click a pin to jump.'}
         </p>
       </div>
     </section>

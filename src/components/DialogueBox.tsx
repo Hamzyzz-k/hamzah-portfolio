@@ -10,6 +10,8 @@ interface Props {
   speed?: number;
   children?: ReactNode;
   className?: string;
+  /** When given, the box gets a close button that calls this. */
+  onClose?: () => void;
 }
 
 /**
@@ -23,6 +25,7 @@ export default function DialogueBox({
   speed = 24,
   children,
   className = '',
+  onClose,
 }: Props) {
   const { text, done, finish } = useTypewriter(lines, active, speed);
 
@@ -38,6 +41,21 @@ export default function DialogueBox({
       aria-label={done ? undefined : 'Skip typing'}
     >
       {speaker && <span className="dialogue__speaker">{speaker}</span>}
+      {onClose && (
+        <button
+          type="button"
+          className="dialogue__close"
+          aria-label="Close"
+          // The box itself skips the typewriter on click, which would other-
+          // wise swallow this one.
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+        >
+          ×
+        </button>
+      )}
       <p className="dialogue__text">
         {text}
         {!done && <span className="dialogue__caret" />}

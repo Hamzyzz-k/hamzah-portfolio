@@ -42,6 +42,15 @@ export interface CompanionState {
   /** Hidden during the boot screen and wherever he would be in the way. */
   hidden: boolean;
   /**
+   * Temporarily painted out while something on top of him owns the screen —
+   * currently the tapped-open project panel on a phone, which covers the map
+   * he is standing on. Separate from `hidden` on purpose: this comes and goes
+   * on its own schedule, and must not clobber what boot/contact set there.
+   * His anchor is deliberately left alone, so he is still standing where he
+   * was the moment it lifts rather than walking back in from the page edge.
+   */
+  occluded: boolean;
+  /**
    * Bumped whenever a nav jump should force a tired/wipe reaction, regardless
    * of how fast the actual scroll turned out to be — a hash jump can land
    * instantly, well under the natural fast-scroll speed threshold.
@@ -49,7 +58,13 @@ export interface CompanionState {
   arrival: number;
 }
 
-const state: CompanionState = { anchor: null, action: null, hidden: false, arrival: 0 };
+const state: CompanionState = {
+  anchor: null,
+  action: null,
+  hidden: false,
+  occluded: false,
+  arrival: 0,
+};
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -91,6 +106,12 @@ export const companion = {
   setHidden(hidden: boolean) {
     if (state.hidden === hidden) return;
     state.hidden = hidden;
+    emit();
+  },
+
+  setOccluded(occluded: boolean) {
+    if (state.occluded === occluded) return;
+    state.occluded = occluded;
     emit();
   },
 

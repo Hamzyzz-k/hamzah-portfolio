@@ -116,6 +116,27 @@
   animation: blink 700ms steps(1) infinite;
 }
 
+.dialogue__close {
+  position: absolute;
+  top: -18px;
+  right: -6px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1;
+  background: var(--accent);
+  color: #fff6e5;
+  cursor: pointer;
+  box-shadow: 0 -3px 0 0 var(--outline), 0 3px 0 0 var(--outline),
+    -3px 0 0 0 var(--outline), 3px 0 0 0 var(--outline);
+}
+
 .dialogue__advance {
   position: absolute;
   right: 10px;
@@ -1281,10 +1302,37 @@
     overscroll-behavior: contain;
   }
 
-  /* Room for the speaker tab, which sits 18px above the box, so it stays
-     inside the scroll container's visible area instead of being clipped. */
+  /* Room for the speaker tab and close button, which sit above the box, so
+     they stay inside the scroll container instead of being clipped. */
   .map__talk .dialogue {
     margin-top: 22px;
+  }
+
+  /* Six labelled pins at once is unreadable at phone scale, so only the one
+     he has actually reached names itself. */
+  .map__pin-label {
+    display: none;
+  }
+
+  .map__pin.is-popped {
+    z-index: 8;
+  }
+
+  .map__pin.is-popped .map__pin-label {
+    display: block;
+    font-size: 8px;
+    padding: 5px 7px;
+    color: var(--accent-2);
+    max-width: 150px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .map__pin.is-popped .map__pin-head {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
   }
 }
 
