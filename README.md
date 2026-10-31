@@ -7,6 +7,16 @@ links, and a repo button.
 
 Live: https://hamzah-k-portfolio.vercel.app
 
+<p align="center">
+  <img src="docs/screenshots/hero.jpg" alt="Portfolio boot screen: pixel-art character sheet for Hamzah K." width="100%">
+</p>
+
+## Screenshots
+
+| Inventory of skills | The walkable project map |
+|---|---|
+| <img src="docs/screenshots/skills.jpg" alt="Skills inventory grid with item detail panel"> | <img src="docs/screenshots/project-map.jpg" alt="Top-down map with a project stop opened into a write-up"> |
+
 ## Stack
 
 Vite + React 18 + TypeScript. No animation library or UI kit — the scroll
